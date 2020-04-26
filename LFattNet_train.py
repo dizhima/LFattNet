@@ -276,13 +276,12 @@ if __name__ == '__main__':
         
         val_output = model_512.predict(valdata, batch_size=1)
 
-        print(np.max(valdata[40][0]))
-        print(np.min(valdata[40][0]))
-        cv2.imwrite('left.png', (valdata[40][0]*255.0).astype(np.uint8))
-        print(val_output.shape)
-        print(np.max(val_output[0]))
-        print(np.min(val_output[0]))
-        save_disparity_jet(val_output[0], 'disparity.png')
+        # print(np.max(valdata[40][0]))
+        # print(np.min(valdata[40][0]))
+        # cv2.imwrite('left.png', (valdata[40][0]*255.0).astype(np.uint8))
+        # print(val_output.shape)
+        print('val disp range:', np.max(val_output[0]), np.min(val_output[0]))
+        # save_disparity_jet(val_output[0], 'disparity.png')
 
 
         ''' Save prediction image(disparity map) in 'current_output/' folder '''
@@ -308,3 +307,7 @@ if __name__ == '__main__':
             best_bad_pixel = validation_bad_pixel_ratio
             model.save(save_path_file_new)
             print("saved!!!")
+
+        if iter02 == cfg.max_steps-1:
+            path = cfg.name+'.hdf5'
+            model.save(path)
