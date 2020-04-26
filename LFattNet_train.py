@@ -230,7 +230,7 @@ if __name__ == '__main__':
     load latest_checkpoint
     """
     if load_weight_is:
-        model.load_weights('./pretrain_model_9x9.hdf5')
+        model.load_weights(cfg.name+'.hdf5')
     
 
     """ 
