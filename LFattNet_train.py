@@ -22,6 +22,25 @@ import datetime
 import threading
 import cv2
 
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--name", type=str, default='LFattNet')
+    parser.add_argument("--ckpt", type=str, default='LFattNet_checkpoint/')
+    parser.add_argument("--output", type=str, default='LFattNet_output/')
+    
+    parser.add_argument("--print_interval", type=int, default=1)
+    
+    parser.add_argument("--patch_size", type=int, default=32)
+    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--max_steps", type=int, default=10)
+    parser.add_argument("--lr", type=float, default=0.01)
+
+    parser.add_argument('--retrain', type=bool, default=False)
+    parser.add_argument('--bpbar', type=float, default=5)
+    return parser.parse_args()
+
 def save_disparity_jet(disparity, filename):
     max_disp = np.nanmax(disparity[disparity != np.inf])
     min_disp = np.nanmin(disparity[disparity != np.inf])
@@ -39,36 +58,36 @@ if __name__ == '__main__':
     '''
 
 
-    class threadsafe_iter:
-        """
-        Takes an iterator/generator and makes it thread-safe by
-        serializing call to the `next` method of given iterator/generator.
-        """
+    # class threadsafe_iter:
+    #     """
+    #     Takes an iterator/generator and makes it thread-safe by
+    #     serializing call to the `next` method of given iterator/generator.
+    #     """
 
-        def __init__(self, it):
-            self.it = it
-            self.lock = threading.Lock()
+    #     def __init__(self, it):
+    #         self.it = it
+    #         self.lock = threading.Lock()
 
-        def __iter__(self):
-            return self
+    #     def __iter__(self):
+    #         return self
 
-        def __next__(self):
-            with self.lock:
-                return self.it.__next__()
-
-
-    def threadsafe_generator(f):
-        """
-        A decorator that takes a generator function and makes it thread-safe.
-        """
-
-        def g(*a, **kw):
-            return threadsafe_iter(f(*a, **kw))
-
-        return g
+    #     def __next__(self):
+    #         with self.lock:
+    #             return self.it.__next__()
 
 
-    @threadsafe_generator
+    # def threadsafe_generator(f):
+    #     """
+    #     A decorator that takes a generator function and makes it thread-safe.
+    #     """
+
+    #     def g(*a, **kw):
+    #         return threadsafe_iter(f(*a, **kw))
+
+    #     return g
+
+
+    # @threadsafe_generator
     def myGenerator(traindata_all, traindata_label,
                     input_size, label_size, batch_size,
                     AngualrViews,
@@ -97,20 +116,24 @@ if __name__ == '__main__':
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+    ### Using parse ###
+    cfg = parse_args()
+
     ''' 
     GPU setting ( Our setting: gtx 1080ti,  
                                gpu number = 0 ) 
     '''
-    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    ### Do this in terminal ###
+    # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
     os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
-    networkname = 'LFattNet'
+    networkname = cfg.name
 
     iter00 = 0
 
-    load_weight_is = False
+    load_weight_is = cfg.retrain
     # load_weight_is = True;
 
     model_learning_rate = 0.001
@@ -118,20 +141,20 @@ if __name__ == '__main__':
     ''' 
     Define Patch-wise training parameters
     '''
-    input_size = 32  # Input size should be greater than or equal to 23
-    label_size = 32  # Since label_size should be greater than or equal to 1
+    input_size = cfg.patch_size  # Input size should be greater than or equal to 23
+    label_size = cfg.patch_size  # Since label_size should be greater than or equal to 1
     AngualrViews = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8])  # number of views ( 0~8 for 9x9 )
 
-    batch_size = 12
-    workers_num = 2  # number of threads
+    batch_size = cfg.batch_size
+    workers_num = 1  # number of threads
 
-    display_status_ratio = 10000
+    display_status_ratio = cfg.print_interval
 
     ''' 
     Define directory for saving checkpoint file & disparity output image
     '''
-    LFattNet_checkpoints_path = 'LFattNet_checkpoint/'
-    LFattNet_output_path = 'LFattNet_output/'
+    LFattNet_checkpoints_path = cfg.ckpt
+    LFattNet_output_path = cfg.output
 
     directory_ckp = LFattNet_checkpoints_path+"%s_ckp" % (networkname)
     if not os.path.exists(directory_ckp):
@@ -220,8 +243,8 @@ if __name__ == '__main__':
 
     my_generator = myGenerator(traindata_all, traindata_label, input_size, label_size, batch_size,
                                AngualrViews, boolmask_img4, boolmask_img6, boolmask_img15)
-    best_bad_pixel = 100.0
-    for iter02 in range(10000000):
+    best_bad_pixel = cfg.bpbar
+    for iter02 in range(cfg.max_steps):
 
         ''' Patch-wise training... start'''
         t0 = time.time()

@@ -214,7 +214,7 @@ def disparityregression(input):
     return out
 
 
-def define_LFattNet(sz_input, sz_input2, view_n, learning_rate):
+def define_LFattNet(sz_input, sz_input2, view_n, learning_rate, train=True):
 
     """ 81 inputs"""
     input_list = []
@@ -243,11 +243,13 @@ def define_LFattNet(sz_input, sz_input2, view_n, learning_rate):
 
     pred = Lambda(disparityregression)(pred)
 
-    # when training use below
-    # model = Model(inputs=input_list, outputs=[pred])
+    if train:
+        # when training use below
+        model = Model(inputs=input_list, outputs=[pred])
 
-    # when evaluation use below
-    model = Model(inputs=input_list, outputs=[pred, attention])
+    else:
+        # when evaluation use below
+        model = Model(inputs=input_list, outputs=[pred, attention])
     
     model.summary()
 
