@@ -6,10 +6,11 @@ from LFattNet_func.func_generate_traindata_noise import generate_traindata_for_t
 from LFattNet_func.func_generate_traindata_noise import data_augmentation_for_train
 from LFattNet_func.func_generate_traindata_noise import generate_traindata512
 
-from LFattNet_func.fen import FEN
 from LFattNet_func.func_pfm import read_pfm
 from LFattNet_func.func_savedata import display_current_output
 from LFattNet_func.util import load_LFdata
+
+from my_func.fen import FEN
 
 import numpy as np
 import matplotlib.pyplot as plt
