@@ -134,7 +134,7 @@ def _inverted_residual_block(inputs, filters, kernel, t, alpha, strides, n):
 def stage_1(sz_input, sz_input2, alpha=1):
     oup_ch = 4
     inputs = Input(shape=(sz_input, sz_input2, 1))
-    x = _conv_block(inputs, oup_ch, (1, 1), (1, 1))
+    x = _conv_block(inputs, oup_ch, (3,3), (1, 1))
     output = _inverted_residual_block(x, oup_ch, (3, 3), t=4, alpha=alpha, strides=1, n=4)
     return Model(inputs, output)
 
@@ -147,8 +147,11 @@ def stage_2(sz_input, sz_input2, alpha=1):
 
     x = Concatenate(axis=3)(input_list)
     x = _inverted_residual_block(x, oup_ch, (3, 3), t=4, alpha=alpha, strides=1, n=4)
-    x = _conv_block(x, oup_ch, (1, 1), (1, 1))
-    output = Conv2D(1, (1, 1), padding='same', use_bias=False)(x)
+    
+    x = DepthwiseConv2D((3,3), strides=(1,1), depth_multiplier=1, padding='same', use_bias=False)(x)
+    x = BatchNormalization(axis=1)(x)
+    x = Activation('relu')(x)
+    output = Conv2D(1, (1, 1), strides=(1, 1), padding='same', use_bias=False)(x)
     return Model(input_list, output)
 
 def FEN(sz_input, sz_input2, learning_rate, train=True):
@@ -183,7 +186,6 @@ def FEN(sz_input, sz_input2, learning_rate, train=True):
     output = Reshape((sz_input, sz_input2))(output)
 
     model = Model(input_list, [output])
-    # plot_model(model, to_file='images/MobileNetv2.png', show_shapes=True)
     opt = Adam(lr=learning_rate)
 
     model.summary()
