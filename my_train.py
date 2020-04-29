@@ -214,7 +214,6 @@ if __name__ == '__main__':
     '''
     model = FEN(input_size, 
                   input_size,
-                  AngualrViews,
                   model_learning_rate)
 
     ''' 
@@ -224,7 +223,6 @@ if __name__ == '__main__':
     image_h = 512
     model_512 = FEN(image_w,
                       image_h,
-                      AngualrViews,
                       model_learning_rate)
 
     """ 
