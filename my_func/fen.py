@@ -136,7 +136,8 @@ def stage_1(sz_input, sz_input2, alpha=1):
     oup_ch = 4
     inputs = Input(shape=(sz_input, sz_input2, 1))
     x = _conv_block(inputs, oup_ch, (3,3), (1, 1))
-    output = _inverted_residual_block(x, oup_ch, (3, 3), t=4, alpha=alpha, strides=1, n=4)
+    x = _inverted_residual_block(x, oup_ch, (3, 3), t=4, alpha=alpha, strides=1, n=4)
+    output = Conv2D(oup_ch, (3, 3), strides=(1, 1), padding='same', use_bias=False)(x)
     return Model(inputs, output)
 
 def stage_2(sz_input, sz_input2, alpha=1):
@@ -146,22 +147,13 @@ def stage_2(sz_input, sz_input2, alpha=1):
     for i in range(81):
         input_list.append(Input(shape=(sz_input, sz_input2, 4)))
 
-    x = Concatenate(axis=3)(input_list)
+    x = Concatenate(axis=-1)(input_list)
     x = _inverted_residual_block(x, oup_ch, (3, 3), t=4, alpha=alpha, strides=1, n=4)
     
-    x = BatchNormalization(axis=3)(x)
+    x = BatchNormalization(axis=-1)(x)
     x = Activation('relu')(x)
-    output = Conv2D(9, (1, 1), strides=(1, 1), padding='same', use_bias=False)(x)
+    output = Conv2D(1, (1, 1), strides=(1, 1), padding='same', use_bias=False)(x)
     return Model(input_list, output)
-
-def disparityregression(input):
-    shape = K.shape(input)
-    disparity_values = np.linspace(-4, 4, 9)
-    x = K.constant(disparity_values, shape=[9])
-    x = K.expand_dims(K.expand_dims(K.expand_dims(x, 0), 0), 0)
-    x = tf.tile(x, [shape[0], shape[1], shape[2], 1])
-    out = K.sum(multiply([input, x]), -1)
-    return out
 
 def FEN(sz_input, sz_input2, learning_rate, train=True):
     """FEN
@@ -192,11 +184,10 @@ def FEN(sz_input, sz_input2, learning_rate, train=True):
     """ stage_2"""
     merge_feature = stage_2(sz_input, sz_input2)
     output = merge_feature(feature_list)
-    # output = Reshape((sz_input, sz_input2))(output)
-    # output = Lambda(lambda x: K.squeeze(x, -1))(output)
+    output = Lambda(lambda x: K.squeeze(x, -1))(output)
 
-    output = Activation('softmax')(output)
-    output = Lambda(disparityregression)(output)
+    # output = Activation('softmax')(output)
+    # output = Lambda(disparityregression)(output)
 
     model = Model(input_list, [output])
     opt = Adam(lr=learning_rate)
