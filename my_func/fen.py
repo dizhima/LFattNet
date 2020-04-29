@@ -9,7 +9,7 @@
 from keras.optimizers import Adam
 from keras.models import Model
 from keras.layers import Input, Conv2D, GlobalAveragePooling2D, Dropout
-from keras.layers import Activation, BatchNormalization, Add, Reshape, DepthwiseConv2D
+from keras.layers import Activation, BatchNormalization, Add, Reshape, DepthwiseConv2D, Lambda
 from keras.utils.vis_utils import plot_model
 from keras.layers import Concatenate
 
@@ -182,7 +182,8 @@ def FEN(sz_input, sz_input2, learning_rate, train=True):
     """ stage_2"""
     merge_feature = stage_2(sz_input, sz_input2)
     output = merge_feature(feature_list)
-    output = Reshape((sz_input, sz_input2))(output)
+    # output = Reshape((sz_input, sz_input2))(output)
+    output = Lambda(lambda x: K.squeeze(x, -1))(output)
 
     model = Model(input_list, [output])
     opt = Adam(lr=learning_rate)
