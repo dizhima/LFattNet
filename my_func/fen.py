@@ -147,6 +147,7 @@ def stage_2(sz_input, sz_input2, alpha=1):
 
     x = Concatenate(axis=3)(input_list)
     x = _inverted_residual_block(x, oup_ch, (3, 3), t=4, alpha=alpha, strides=1, n=4)
+    x = _conv_block(x, oup_ch, (1, 1), (1, 1))
     output = Conv2D(1, (1, 1), padding='same', use_bias=False)(x)
     return Model(input_list, output)
 
