@@ -221,7 +221,7 @@ def NET(sz_input, sz_input2, learning_rate, train=True):
     [hxw, ...]
     """
     input_list = []
-    for i in range(len(view_n)*len(view_n)):
+    for i in range(81):
         # print('input '+str(i))
         input_list.append(Input(shape=(sz_input, sz_input2, 1)))
 
@@ -229,7 +229,7 @@ def NET(sz_input, sz_input2, learning_rate, train=True):
     feature_extraction_layer = feature_extraction(sz_input, sz_input2)
 
     feature_list = []
-    for i in range(len(view_n)*len(view_n)):
+    for i in range(81):
         # print('feature '+str(i))
         feature_list.append(feature_extraction_layer(input_list[i]))
 
