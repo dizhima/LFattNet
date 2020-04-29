@@ -10,7 +10,7 @@ from LFattNet_func.func_pfm import read_pfm
 from LFattNet_func.func_savedata import display_current_output
 from LFattNet_func.util import load_LFdata
 
-from my_func.net import NET
+from my_func.net import NET as NET
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     ''' 
     Model for patch-wise training  
     '''
-    model = FEN(input_size, 
+    model = NET(input_size, 
                   input_size,
                   model_learning_rate)
 
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     '''
     image_w = 512
     image_h = 512
-    model_512 = FEN(image_w,
+    model_512 = NET(image_w,
                       image_h,
                       model_learning_rate)
 
