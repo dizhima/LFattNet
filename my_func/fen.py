@@ -6,7 +6,7 @@
    (https://arxiv.org/abs/1801.04381)
 """
 
-
+from keras.optimizers import Adam
 from keras.models import Model
 from keras.layers import Input, Conv2D, GlobalAveragePooling2D, Dropout
 from keras.layers import Activation, BatchNormalization, Add, Reshape, DepthwiseConv2D
@@ -185,7 +185,7 @@ def FEN(sz_input, sz_input2, learning_rate, train=True):
     opt = Adam(lr=learning_rate)
 
     model.compile(optimizer=opt, loss='mae')
-    
+
     return model
 
 
