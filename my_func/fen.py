@@ -55,9 +55,9 @@ def _conv_block(inputs, filters, kernel, strides):
 
     channel_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
-    x = Conv2D(filters, kernel, padding='same', strides=strides)(inputs)
+    x = Conv2D(filters, kernel, padding='same', strides=strides, use_bias=False)(inputs)
     x = BatchNormalization(axis=channel_axis)(x)
-    return Activation(relu6)(x)
+    return Activation('relu')(x)
 
 
 def _bottleneck(inputs, filters, kernel, t, alpha, s, r=False):
@@ -89,11 +89,11 @@ def _bottleneck(inputs, filters, kernel, t, alpha, s, r=False):
 
     x = _conv_block(inputs, tchannel, (1, 1), (1, 1))
 
-    x = DepthwiseConv2D(kernel, strides=(s, s), depth_multiplier=1, padding='same')(x)
+    x = DepthwiseConv2D(kernel, strides=(s, s), depth_multiplier=1, padding='same', use_bias=False)(x)
     x = BatchNormalization(axis=channel_axis)(x)
-    x = Activation(relu6)(x)
+    x = Activation('relu')(x)
 
-    x = Conv2D(cchannel, (1, 1), strides=(1, 1), padding='same')(x)
+    x = Conv2D(cchannel, (1, 1), strides=(1, 1), padding='same', use_bias=False)(x)
     x = BatchNormalization(axis=channel_axis)(x)
 
     if r:
@@ -147,7 +147,7 @@ def stage_2(sz_input, sz_input2, alpha=1):
 
     x = Concatenate(axis=3)(input_list)
     x = _inverted_residual_block(x, oup_ch, (3, 3), t=4, alpha=alpha, strides=1, n=4)
-    output = Conv2D(1, (1, 1), padding='same')(x)
+    output = Conv2D(1, (1, 1), padding='same', use_bias=False)(x)
     return Model(input_list, output)
 
 def FEN(sz_input, sz_input2, learning_rate, train=True):
