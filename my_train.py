@@ -10,7 +10,7 @@ from LFattNet_func.func_pfm import read_pfm
 from LFattNet_func.func_savedata import display_current_output
 from LFattNet_func.util import load_LFdata
 
-from my_func.fen import FEN
+from my_func.net import NET
 
 import numpy as np
 import matplotlib.pyplot as plt
