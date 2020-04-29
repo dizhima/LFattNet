@@ -182,7 +182,10 @@ def FEN(sz_input, sz_input2, learning_rate, train=True):
 
     model = Model(input_list, output)
     # plot_model(model, to_file='images/MobileNetv2.png', show_shapes=True)
+    opt = Adam(lr=learning_rate)
 
+    model.compile(optimizer=opt, loss='mae')
+    
     return model
 
 
