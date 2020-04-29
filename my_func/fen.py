@@ -148,8 +148,7 @@ def stage_2(sz_input, sz_input2, alpha=1):
     x = Concatenate(axis=3)(input_list)
     x = _inverted_residual_block(x, oup_ch, (3, 3), t=4, alpha=alpha, strides=1, n=4)
     
-    x = DepthwiseConv2D((3,3), strides=(1,1), depth_multiplier=1, padding='same', use_bias=False)(x)
-    x = BatchNormalization(axis=-1)(x)
+    x = BatchNormalization(axis=3)(x)
     x = Activation('relu')(x)
     output = Conv2D(1, (1, 1), strides=(1, 1), padding='same', use_bias=False)(x)
     return Model(input_list, output)
