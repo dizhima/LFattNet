@@ -13,7 +13,9 @@ from keras.layers import Activation, BatchNormalization, Add, Reshape, Depthwise
 from keras.utils.vis_utils import plot_model
 from keras.layers import Concatenate
 
-from keras import backend as K
+# from keras import backend as K
+from tensorflow.keras import backend as K
+
 import numpy as np
 import time
 
