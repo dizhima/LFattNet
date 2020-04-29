@@ -10,11 +10,12 @@ from keras.optimizers import Adam
 from keras.models import Model
 from keras.layers import Input, Conv2D, GlobalAveragePooling2D, Dropout
 from keras.layers import Activation, BatchNormalization, Add, Reshape, DepthwiseConv2D, Lambda
+from keras.layers import Concatenate,multiply
 from keras.utils.vis_utils import plot_model
-from keras.layers import Concatenate
 
 # from keras import backend as K
 from tensorflow.keras import backend as K
+import tensorflow as tf
 
 import numpy as np
 import time
