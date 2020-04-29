@@ -214,7 +214,7 @@ def disparityregression(input):
     return out
 
 
-def NET(sz_input, sz_input2, view_n, learning_rate, train=True):
+def NET(sz_input, sz_input2, learning_rate, train=True):
 
     """ 
     81 inputs

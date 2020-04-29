@@ -137,7 +137,7 @@ if __name__ == '__main__':
     load_weight_is = cfg.retrain
     # load_weight_is = True;
 
-    model_learning_rate = 0.001
+    model_learning_rate = cfg.lr
 
     ''' 
     Define Patch-wise training parameters
