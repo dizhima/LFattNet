@@ -10,8 +10,6 @@ from LFattNet_func.func_pfm import read_pfm
 from LFattNet_func.func_savedata import display_current_output
 from LFattNet_func.util import load_LFdata
 
-from my_func.net import NET as NET
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -40,6 +38,8 @@ def parse_args():
 
     parser.add_argument('--retrain', type=bool, default=False)
     parser.add_argument('--bpbar', type=float, default=5)
+    parser.add_argument('--model', type=float, default=0)
+
     return parser.parse_args()
 
 def save_disparity_jet(disparity, filename):
@@ -208,6 +208,15 @@ if __name__ == '__main__':
     valdata, valdata_label = generate_traindata512(valdata_all, valdata_label, AngualrViews)
     
     print('Load test data... Complete')
+
+
+    ''' 
+    choose Model
+    '''
+    if cfg.model == 0:
+        from my_func.fen import FEN as NET
+    elif cfg.model == 1:
+        from my_func.net1 import NET
 
     ''' 
     Model for patch-wise training  
