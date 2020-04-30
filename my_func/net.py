@@ -189,7 +189,7 @@ def disparityregression(input):
     return out
 
 
-def define_LFattNet(sz_input, sz_input2, learning_rate, train=True):
+def NET(sz_input, sz_input2, learning_rate, train=True):
 
     """ 
     81 inputs
@@ -240,7 +240,7 @@ def define_LFattNet(sz_input, sz_input2, learning_rate, train=True):
     return model
 
 if __name__ == '__main__':
-    model = define_LFattNet(256, 256, 0.01)
+    model = NET(256, 256, 0.01)
     dum = np.zeros((1, 256, 256,1), dtype=np.float32)
     tmp_list = []
     for i in range(81):
