@@ -202,7 +202,7 @@ def basic(sz_input, sz_input2):
     classify = Activation('relu')(classify)
     cost = Conv2D(1, 3, 1, 'same', use_bias=False)(classify)
 
-    return Model(inputs=[i], outputs=[cost])
+    return Model(inputs=i, outputs=cost)
 
 def disparityregression(input):
     shape = K.shape(input)
