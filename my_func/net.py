@@ -155,10 +155,11 @@ def channel_attention(cost_volume):
     x = Lambda(lambda y:K.repeat_elements(y, 4, -1))(attention)
     return multiply([x, cost_volume]), attention
 
-def basic(cost_volume):
+def basic(sz_input, sz_input2):
+    i = Input(shape=(sz_input, sz_input2, 324))
 
     feature = 2*75
-    dres0 = convbn(cost_volume, feature, 3, 1)
+    dres0 = convbn(i, feature, 3, 1)
     dres0 = Activation('relu')(dres0)
     dres0 = convbn(dres0, feature, 3, 1)
     cost0 = Activation('relu')(dres0)
@@ -177,7 +178,7 @@ def basic(cost_volume):
     classify = Activation('relu')(classify)
     cost = Conv2D(1, 3, 1, 'same', use_bias=False)(classify)
 
-    return cost
+    return Model(inputs=i, outputs=[cost])
 
 def disparityregression(input):
     shape = K.shape(input)
@@ -213,13 +214,16 @@ def NET(sz_input, sz_input2, learning_rate, train=True):
 
     """ channel attention """
     cv, attention = channel_attention(cv)
-    cv = Lambda(lambda y: K.reshape(y, (K.shape(y)[0]*9, sz_input, sz_input2, 324)))(cv)
+    # cv = Lambda(lambda y: K.reshape(y, (K.shape(y)[0]*9, sz_input, sz_input2, 324)))(cv)
 
     """ cost volume regression """
-    cost = basic(cv)
+    basic_layer = basic(sz_input, sz_input2)
+    cost_list = []
+    for i in range(9):
+        cost_list.append(basic_layer(cv[:,i]))
+    cost = Lambda(lambda y: K.concatenate(y, axis=-1))(cost_list)
     # cost = Lambda(lambda x: K.permute_dimensions(K.squeeze(x, -1), (0, 2, 3, 1)))(cost)
     pred = Activation('softmax')(cost)
-    pred = Lambda(lambda y: K.reshape(y, (K.shape(y)[0]/9, sz_input, sz_input2, 9)))(pred)
 
     pred = Lambda(disparityregression)(pred)
 
