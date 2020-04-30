@@ -10,7 +10,7 @@ from tensorflow.contrib.keras import backend as K
 import numpy as np
 import time
 
-def convbn(input, out_planes, kernel_size, stride, dilation):
+def convbn(input, out_planes, kernel_size, stride, dilation=1):
 
     seq = Conv2D(out_planes, kernel_size, stride, 'same', dilation_rate=dilation, use_bias=False)(input)
     seq = BatchNormalization()(seq)
@@ -155,54 +155,29 @@ def channel_attention(cost_volume):
     x = Lambda(lambda y:K.repeat_elements(y, 4, -1))(attention)
     return multiply([x, cost_volume]), attention
 
-def channel_attention_free(cost_volume):
-    x = GlobalAveragePooling3D()(cost_volume)
-    x = Lambda(lambda y: K.expand_dims(K.expand_dims(K.expand_dims(y, 1), 1), 1))(x)
-    x = Conv3D(170, 1, 1, 'same')(x)
-    x = Activation('relu')(x)
-    x = Conv3D(81, 1, 1, 'same')(x)
-    x = Activation('sigmoid')(x)
-    attention = Lambda(lambda y: K.reshape(y, (K.shape(y)[0], 1, 1, 1, 81)))(x)
-    x = Lambda(lambda y:K.repeat_elements(y, 4, -1))(attention)
-    return multiply([x, cost_volume]), attention
+def basic(cost_volume):
 
-def channel_attention_mirror(cost_volume):
-    x = GlobalAveragePooling3D()(cost_volume)
-    x = Lambda(lambda y: K.expand_dims(K.expand_dims(K.expand_dims(y, 1), 1), 1))(x)
-    x = Conv3D(170, 1, 1, 'same')(x)
-    x = Activation('relu')(x)
-    x = Conv3D(25, 1, 1, 'same')(x)
-    x = Activation('sigmoid')(x)
-    x = Lambda(lambda y: K.reshape(y, (K.shape(y)[0], 5, 5)))(x)
-    x = Lambda(lambda y: tf.pad(y, [[0, 0], [0, 4], [0, 4]], 'REFLECT'))(x)
-    attention = Lambda(lambda y: K.reshape(y, (K.shape(y)[0], 1, 1, 1, 81)))(x)
-    x = Lambda(lambda y:K.repeat_elements(y, 4, -1))(attention)
-    return multiply([x, cost_volume]), attention
-
-
-def basic(sz_input, sz_input2):
-    i = Input(shape=(sz_input, sz_input2, 324))
     feature = 2*75
-    dres0 = convbn(i, feature, 3, 1, 1)
+    dres0 = convbn(cost_volume, feature, 3, 1)
     dres0 = Activation('relu')(dres0)
-    dres0 = convbn(dres0, feature, 3, 1, 1)
+    dres0 = convbn(dres0, feature, 3, 1)
     cost0 = Activation('relu')(dres0)
 
-    dres1 = convbn(cost0, feature, 3, 1, 1)
+    dres1 = convbn(cost0, feature, 3, 1)
     dres1 = Activation('relu')(dres1)
-    dres1 = convbn(dres1, feature, 3, 1, 1)
+    dres1 = convbn(dres1, feature, 3, 1)
     cost0 = add([dres1, cost0])
 
-    dres4 = convbn(cost0, feature, 3, 1, 1)
+    dres4 = convbn(cost0, feature, 3, 1)
     dres4 = Activation('relu')(dres4)
-    dres4 = convbn(dres4, feature, 3, 1, 1)
+    dres4 = convbn(dres4, feature, 3, 1)
     cost0 = add([dres4, cost0])
 
-    classify = convbn(cost0, feature, 3, 1, 1)
+    classify = convbn(cost0, feature, 3, 1)
     classify = Activation('relu')(classify)
     cost = Conv2D(1, 3, 1, 'same', use_bias=False)(classify)
 
-    return Model(inputs=i, outputs=cost)
+    return cost
 
 def disparityregression(input):
     shape = K.shape(input)
@@ -214,7 +189,7 @@ def disparityregression(input):
     return out
 
 
-def NET(sz_input, sz_input2, learning_rate, train=True):
+def define_LFattNet(sz_input, sz_input2, learning_rate, train=True):
 
     """ 
     81 inputs
@@ -238,15 +213,13 @@ def NET(sz_input, sz_input2, learning_rate, train=True):
 
     """ channel attention """
     cv, attention = channel_attention(cv)
+    cv = Lambda(lambda y: K.reshape(y, (K.shape(y)[0]*9, sz_input, sz_input2, 324)))(cv)
 
     """ cost volume regression """
-    cost = []
-    basic_layer = basic(sz_input, sz_input2)
-    for i in range(9):
-        cost.append(basic_layer(cv[:,i]))
-    cost = Lambda(lambda x: K.concatenate(x,-1))(cost)
-    # cost = Lambda(lambda x: K.permute_dimensions(K.squeeze(x, -1), (0, 2, 3, 1)))(cost) # bxDxhxwx1 -> bxhxwxD
+    cost = basic(cv)
+    # cost = Lambda(lambda x: K.permute_dimensions(K.squeeze(x, -1), (0, 2, 3, 1)))(cost)
     pred = Activation('softmax')(cost)
+    pred = Lambda(lambda y: K.reshape(y, (K.shape(y)[0]/9, sz_input, sz_input2, 9)))(pred)
 
     pred = Lambda(disparityregression)(pred)
 
@@ -267,9 +240,8 @@ def NET(sz_input, sz_input2, learning_rate, train=True):
     return model
 
 if __name__ == '__main__':
-    size = 512
-    model = define_LFattNet(size, size,[0, 1, 2, 3, 4, 5, 6, 7, 8],0.01)
-    dum = np.zeros((1, size, size,1), dtype=np.float32)
+    model = define_LFattNet(256, 256, 0.01)
+    dum = np.zeros((1, 256, 256,1), dtype=np.float32)
     tmp_list = []
     for i in range(81):
         tmp_list.append(dum)
