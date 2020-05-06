@@ -66,7 +66,7 @@ The code is modified and heavily borrowed from EPINET: <https://github.com/chshi
 - Setting
 
 |patch size|batch size|max step|epoch / step|learning rate|lr decay step|lr decay rate|
-| ------------ | ------------ |------------ |------------ |------------ |
+| ------------ | ------------ |------------ |------------ |------------ |------------ |------------ |
 |32|32|78|2000|0.001|0.1|45|
 
 - Best performance (I didn't fine tune the model)
