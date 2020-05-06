@@ -61,3 +61,18 @@ Cudnn             7.1.4
 Last modified data: 2020/2/19.
 
 The code is modified and heavily borrowed from EPINET: <https://github.com/chshin10/epinet>
+
+# Implement result
+- Setting
+
+|patch size|batch size|max step|epoch / step|learning rate|lr decay step|lr decay rate|
+| ------------ | ------------ |------------ |------------ |------------ |
+|32|32|78|2000|0.001|0.1|45|
+
+- Best performance (I didn't fine tune the model)
+
+| BadPix 0.07  |MSE100   |
+| ------------ | ------------ |
+| 2.61  | 0.989  |
+
+- 2020/05/05
